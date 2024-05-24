@@ -19,14 +19,14 @@ namespace lojaVirtualComDB
         List<Cliente> Clientes = new List<Cliente>();
         string connectionDB = "Data Source=loja_virtual.db";
 
-        public void CriarDB()
+        public void CriarDB()//cria a base de dados
         {
             try
             {
-                using (var connection = new SQLiteConnection(connectionDB))
+                using (var connection = new SQLiteConnection(connectionDB))//cria a ligação à base de dados
                 {
-                    connection.Open();
-
+                    connection.Open();//abre a ligação à base de dados
+                    // Criação da tabela produtos
                     string criarProdutos = @"CREATE TABLE IF NOT EXISTS produtos (
                                     Id INTEGER PRIMARY KEY UNIQUE,
                                     Nome TEXT UNIQUE,
@@ -37,7 +37,7 @@ namespace lojaVirtualComDB
                     {
                         cmd.ExecuteNonQuery();
                     }
-
+                    // Criação da tabela clientes
                     string criarClientes = @"CREATE TABLE IF NOT EXISTS clientes (
                                     nome TEXT,
                                     numero_tele TEXT UNIQUE,   
@@ -49,7 +49,7 @@ namespace lojaVirtualComDB
                     {
                         cmd.ExecuteNonQuery();
                     }
-
+                    // Criação da tabela carrinho
                     string criarCarrinho = @"CREATE TABLE IF NOT EXISTS carrinho (
                                     Email TEXT,
                                     Id INTEGER,
@@ -58,7 +58,7 @@ namespace lojaVirtualComDB
                                     FOREIGN KEY(Id) REFERENCES produtos(Id))";
                     using (var cmd = new SQLiteCommand(criarCarrinho, connection))
                     {
-                        cmd.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();//executa a query
                     }
                 }
             }
@@ -94,16 +94,16 @@ namespace lojaVirtualComDB
                     // TODO: Ver resolução do teste para exemplo prático de como criar
                     // os objetos a partir dos dados armazenados em ficheiro.
 
-                    while (reader.Read())
+                    while (reader.Read())//percorre a tabela produtos
                     {
                         id = reader.GetInt32(0);
-                        stock = reader.GetInt32(2);
-                        preco = reader.GetDouble(3);
+                        stock = reader.GetInt32(3);
+                        preco = reader.GetDouble(2);
                         categoria = reader.GetString(4);
                         preco = Math.Round(preco, 2);
                         nome = reader.GetString(1);
-                        Produto produto = new Produto(nome, id, stock, preco, categoria);
-                        Produtos.Add(produto);
+                        Produto produto = new Produto(nome, id, stock, preco, categoria);//cria um produto com as caracteristicas da tabela produtos
+                        Produtos.Add(produto);//adiciona o produto à lista de produtos
                     }
                 }
                 catch (Exception ex)
@@ -143,8 +143,27 @@ namespace lojaVirtualComDB
                         numeroTelefone = reader.GetInt32(1);// numero de telefone
                         email = reader.GetString(2).ToString();//email
                         morada = reader.GetString(3).ToString();//morada
-                        Cliente cliente = new Cliente(nome, email, numeroTelefone, morada);//cria um novo cliente
-                        Clientes.Add(cliente);//adiciona o cliente à lista de clientes
+                        if (reader.IsDBNull(4))//se o metodo de pagamento for nulo
+                        {
+                            Cliente cliente = new Cliente(nome, email, numeroTelefone, morada);//cria um novo cliente
+                            Clientes.Add(cliente);//adiciona o cliente à lista de clientes
+                        }
+                        else
+                        {
+                            string metodoPaga = reader.GetString(4).ToString();//metodo de pagamento
+                            if(metodoPaga == "cartao de debito" || metodoPaga == "cartao de credito")//se o metodo de pagamento for cartao de debito ou credito
+                            {
+                                int numeroCartao = reader.GetInt32(5);//numero do cartao
+                                Cliente cliente1 = new Cliente(nome, email, numeroTelefone, morada, metodoPaga, numeroCartao);//cria um novo cliente
+                                Clientes.Add(cliente1);//adiciona o cliente à lista de clientes
+                            }
+                            else if(metodoPaga != null && metodoPaga != "")
+                            {
+                                Cliente cliente2 = new Cliente(nome, email, numeroTelefone, morada, metodoPaga);//cria um novo cliente
+                                Clientes.Add(cliente2);//adiciona o cliente à lista de clientes
+                            }
+                        }
+                        
                     }
                 }
                 catch (Exception ex)
@@ -230,7 +249,7 @@ namespace lojaVirtualComDB
             }
         }
 
-        public void adicionar_produto()
+        public void adicionar_produto()//adiciona um produto
         {
             Console.WriteLine("Nome do produto:");
             string nome = Console.ReadLine();
@@ -240,12 +259,12 @@ namespace lojaVirtualComDB
             int stock1 = verificar_num();
             Console.WriteLine("Categoria do produto:");
             string categoria = Console.ReadLine();
-            Produto produto = new Produto(nome, Produtos.Count + 1, stock1, preco1, categoria);
+            Produto produto = new Produto(nome, Produtos.Count + 1, stock1, preco1, categoria);//cria um novo produto com os dados introduzidos
             Produtos.Add(produto);
             try
             {
                 using (var con = new SqliteConnection(connectionDB))
-                {
+                {//adiciona o produto à base de dados
                     con.Open();
                     var cmd = new SqliteCommand("INSERT INTO produtos (Id, Nome, Preco, Stock, categoria) VALUES (@Id, @Nome, @Preco, @Stock, @Categoria)", con);
                     cmd.Parameters.AddWithValue("@Id", Produtos.Count);
@@ -262,7 +281,7 @@ namespace lojaVirtualComDB
             }
         }
 
-        public void adicionar_cliente()
+        public void adicionar_cliente()//adiciona um cliente
         {
             Console.WriteLine("Nome do cliente:");
             string nome = Console.ReadLine();
@@ -272,11 +291,11 @@ namespace lojaVirtualComDB
             int numero1 = verificar_num();
             Console.WriteLine("Morada do cliente:");
             string morada = Console.ReadLine();
-            Cliente cliente = new Cliente(nome, email, numero1, morada);
+            Cliente cliente = new Cliente(nome, email, numero1, morada);//cria um novo cliente com os dados introduzidos
             Clientes.Add(cliente);
             try
             {
-                using (var con = new SqliteConnection(connectionDB))
+                using (var con = new SqliteConnection(connectionDB))//adiciona o cliente à base de dados
                 {
                     con.Open();
                     var cmd = new SqliteCommand("INSERT INTO clientes (nome, numero_tele, Email, morada) VALUES (@Nome, @Numero, @Email, @Morada)", con);
@@ -294,7 +313,7 @@ namespace lojaVirtualComDB
             }
         }
 
-        public void listar_produtos()
+        public void listar_produtos()//lista os produtos
         {
             Console.WriteLine("Produtos:");
             int i = 1;
@@ -306,7 +325,7 @@ namespace lojaVirtualComDB
             }
         }
 
-        public void listar_clientes()
+        public void listar_clientes()//lista os clientes
         {
             int i = 1;
             foreach (Cliente cliente in Clientes)
@@ -317,29 +336,30 @@ namespace lojaVirtualComDB
             }
         }
 
-        public void adicionar_produto_ao_carrinho()
+        public void adicionar_produto_ao_carrinho()//adiciona um produto ao carrinho de um cliente
         {
             bool emailExiste = false;
             bool produtoExiste = false;
             Console.WriteLine("Email do cliente:");
             string email = emailReader();
             Console.WriteLine("Id do produto:");
-            int ID = 345678765;
-            do{
+            int ID = -56545654;
+            do
+            {//verifica se o id do produto é valido
                 ID = verificar_num();
             } while ( ID > Produtos.Count);
-            foreach (Cliente cliente in Clientes)
+            foreach (Cliente cliente in Clientes)//percorre a lista de clientes
             {
-                if (cliente.Email == email)
+                if (cliente.Email == email)//verifica se o email do cliente é igual ao email introduzido
                 {
                     emailExiste = true;
-                    foreach (Produto produto in Produtos)
+                    foreach (Produto produto in Produtos)//percorre a lista de produtos
                     {
-                        if (produto.Id == ID)
+                        if (produto.Id == ID)//verifica se o id do produto é igual ao id introduzido
                         {
                             produtoExiste = true;
                             cliente.adicionarProduto(produto);
-                            try
+                            try//adiciona o produto ao carrinho do cliente na tabela carrinho
                             {
                                 using (var con = new SqliteConnection(connectionDB))
                                 {
@@ -361,70 +381,70 @@ namespace lojaVirtualComDB
                     }
                 }
             }
-            if ( emailExiste == false)
+            if (emailExiste == false)//se o email não existir
             {
                 Console.WriteLine("esse email não existe");
             }
             else
             {
-                if (produtoExiste == false)
+                if (produtoExiste == false)//se o produto não existir
                 {
                     Console.WriteLine("\nesse produto não existe\n\n");
                 }
             }
 
         }
-        public void mostarCarrinho()
+        public void mostarCarrinho()//mostra o carrinho de um cliente
         {
             Console.WriteLine("\nEmail do cliente:");
             string email = emailReader();
             foreach (Cliente cliente in Clientes)
             {
-                if (cliente.Email == email)
+                if (cliente.Email == email)//verifica se o email do cliente é igual ao email introduzido
                 {
-                    cliente.verCarrinho();
+                    cliente.verCarrinho();//mostra o carrinho do cliente
                 }
             }
         }
 
-        public void finalizarCompra()
+        public void finalizarCompra()//finaliza a compra de um cliente
         {
             bool emailExiste = false;
             Console.WriteLine("Email do cliente:");
             string email = emailReader();
             foreach (Cliente cliente in Clientes)
             {
-                if(cliente.Email == email)
+                if(cliente.Email == email)//verifica se o email do cliente é igual ao email introduzido
                 {
                     emailExiste = true;
-                    if (cliente.metodo_pagamento != null && cliente.metodo_pagamento != "")
+                    if (cliente.metodo_pagamento != null && cliente.metodo_pagamento != "")//verifica se o cliente tem um metodo de pagamento
                     {
                         acabarCompra(cliente);
                     }
-                    else
+                    else//se o cliente não tiver um metodo de pagamento
                     {
-                        Console.WriteLine("Tem que adicionar um metodo de pagamento");
+                        Console.WriteLine("Tem que adicionar um metodo de pagamento");//pede ao cliente para adicionar um metodo de pagamento
                         do
                         {
                             Console.WriteLine("Introduza o metodo de pagamento(MBway, cartao de debito/credito, paypal, IBAN, Skrill):");
                             cliente.metodo_pagamento = Console.ReadLine();
                             cliente.metodo_pagamento = cliente.metodo_pagamento.ToLower();
                         } while (cliente.metodo_pagamento != "mbway" && cliente.metodo_pagamento != "cartao de debito" && cliente.metodo_pagamento != "cartao de credito" && cliente.metodo_pagamento != "paypal" && cliente.metodo_pagamento != "iban" && cliente.metodo_pagamento != "skrill");
-                        if (cliente.metodo_pagamento == "cartao de debito" || cliente.metodo_pagamento == "cartao de credito")
+                        if (cliente.metodo_pagamento == "cartao de debito" || cliente.metodo_pagamento == "cartao de credito")//se o metodo de pagamento for cartao de debito ou credito
                         {
-                            Console.WriteLine("Introduza o numero do cartao de credito:");
+                            Console.WriteLine("Introduza o numero do cartao de credito:");//pede ao cliente para introduzir o numero do cartao
                             cliente.NumeroCartao = verificar_num();
                         }
 
 
-                        using (var con = new SqliteConnection(connectionDB))
+                        using (var con = new SqliteConnection(connectionDB))//atualiza o metodo de pagamento do cliente na base de dados
                         {
                             con.Open();
                             var cmd = new SqliteCommand("UPDATE clientes SET metodoPagamento = @metodoPagamento Where Email= @Email", con);
                             cmd.Parameters.AddWithValue("@metodoPagamento", cliente.metodo_pagamento);
                             cmd.Parameters.AddWithValue("@Email", cliente.Email);
                             cmd.ExecuteNonQuery();
-                            if (cliente.metodo_pagamento == "cartao de debito" || cliente.metodo_pagamento == "cartao de credito")
+                            if (cliente.metodo_pagamento == "cartao de debito" || cliente.metodo_pagamento == "cartao de credito")//se o metodo de pagamento for cartao de debito ou credito atualiza o numero do cartao na base de dados
                             {
                                 var cmd2 = new SqliteCommand("UPDATE clientes SET creditCardNumber = @creditCardNumber Where Email= @Email", con);
                                 cmd2.Parameters.AddWithValue("@creditCardNumber", cliente.NumeroCartao);
@@ -434,7 +454,7 @@ namespace lojaVirtualComDB
                             con.Close();
                         }
 
-                        acabarCompra(cliente);
+                        acabarCompra(cliente);//finaliza a compra
                     }
                 }
             }
@@ -445,19 +465,19 @@ namespace lojaVirtualComDB
         }
 
 
-        public void acabarCompra(Cliente cliente)
+        public void acabarCompra(Cliente cliente)//finaliza a compra de um cliente
         {
             string reposta;
             double preco;
             preco = cliente.precoCarrinho();
-            do
+            do//pergunta ao cliente se quer finalizar a compra
             {
                 Console.WriteLine($"O preco será {preco} deseja continuar? (sim/nao)");
                 reposta = Console.ReadLine();
                 reposta = reposta.ToLower();
-                if (reposta.Contains("sim"))
+                if (reposta.Contains("sim"))//se o cliente quiser finalizar a compra
                 {
-                    try
+                    try//atualiza a tabela carrinho para dizer que o produto foi comprado
                     {
                         using (var con = new SqliteConnection(connectionDB))
                         {
@@ -466,9 +486,8 @@ namespace lojaVirtualComDB
                             cmd.Parameters.AddWithValue("@Email", cliente.Email);
                             cmd.ExecuteNonQuery();
                             con.Close();
-                            cliente.acabarCompra();
+                            cliente.acabarCompra();//finaliza a compra
                             Console.WriteLine($"Compra concluida!!!\nForam retirados {preco} do {cliente.metodo_pagamento}");
-                            cliente.acabarCompra();
                         }
                     }catch(Exception e)
                     {
@@ -501,9 +520,9 @@ namespace lojaVirtualComDB
             }
             return -3333;
         }
-        public static double LerDouble(string coisa)
+        public static double LerDouble(string coisa)//verifica se o numero é double
         {
-            while (true)
+            while (true)//loop para verificar se o numero é double
             {
                 string numeroStr = Console.ReadLine();
 
@@ -514,19 +533,19 @@ namespace lojaVirtualComDB
                 }
                 catch (FormatException)
                 {
-                    Console.WriteLine($"formato inválido introduza {coisa} novamente:");
+                    Console.WriteLine($"formato inválido introduza {coisa} novamente:");//  se o numero não for double pede ao utilizador para introduzir o numero novamente
                 }
             }
         }
-        public string emailReader()
+        public string emailReader()//verifica se o email é valido
         {
-            do
+            do//loop para verificar se o email é valido
             {
                 string email;
                 email = Console.ReadLine();
-                if (email.Contains("@") && email.Contains("."))
+                if (email.Contains("@") && email.Contains("."))//verifica se o email contem @ e .
                 {
-                    return email;
+                    return email;//se o email for valido retorna o email
                 }
                 else
                 {

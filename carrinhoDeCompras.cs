@@ -7,6 +7,8 @@ using cliente;
 using produto;
 using carrinhoDeCompras;
 using System.ComponentModel.Design;
+using System.Data;
+using Microsoft.Data.Sqlite;
 
 
 namespace carrinhoDeCompras
@@ -15,22 +17,33 @@ namespace carrinhoDeCompras
     { // class carrinho de compras
         List<Produto> produtos = new List<Produto>();
         List<bool> comprado = new List<bool>();
-
+        string connectionDB = "Data Source=loja_virtual.db";
         public void adicionar(Produto produto)
         {
             produtos.Add(produto);
             comprado.Add(false);
         }
 
-        public void comprar()
+        public void comprar()//compra os produtos 
         {
-            foreach (var prudoto in comprado)
+            int i = 0;
+            foreach (var prudo in comprado)
             {
-                if (prudoto == false)
+                if (prudo == false)
                 {
-                    produtos[comprado.IndexOf(prudoto)].AtualizarDisponiveis(-1);
-                    comprado[comprado.IndexOf(prudoto)] = true;
+                    comprado[i] = true;
+                    produtos[i].Stock -= 1;
+                    using (var con = new SqliteConnection("Data Source=loja_virtual.db"))
+                    {
+                        con.Open();
+                        var cmd1 = new SqliteCommand("UPDATE produtos SET Stock = @Stock WHERE Id = @Id", con);
+                        cmd1.Parameters.AddWithValue("@Stock", produtos[i].Stock);
+                        cmd1.Parameters.AddWithValue("@Id", produtos[i].Id);
+                        cmd1.ExecuteNonQuery();
+                        con.Close();
+                    }
                 }
+                i++;
             }
         }
         public double precoCarrinho()

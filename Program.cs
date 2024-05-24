@@ -26,6 +26,7 @@
 // -----------------------------------------------------------------------
 
 
+
 using System;
 using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
@@ -37,24 +38,24 @@ using lojaVirtualComDB;
 
 namespace Program
 {
-    class Program//classe principal
+    class Program
     {
-        static void Main(string[] args)//método principal
+        static void Main(string[] args)
         {
             loja loja = new loja();
             int opcao = -27362367;
-            try//tenta executar o código
+            try
             {
-                loja.CriarDB();//cria a base de dados
-                loja.carregarProdutos();//carrega os produtos
-                loja.carregarClientes();//carrega os clientes
-                loja.carregarCarrinho();//carrega o carrinho
+                loja.CriarDB();
+                loja.carregarProdutos();
+                loja.carregarClientes();
+                loja.carregarCarrinho();
             }
-            catch (Exception e)//se houver um erro
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
-            do//faz o menu
+            do
             {
                 try
                 {
@@ -68,7 +69,7 @@ namespace Program
                     Console.WriteLine("0-sair");
                     Console.WriteLine("Opção- ");
                     opcao = int.Parse(Console.ReadLine());
-                    switch (opcao)//faz a opção
+                    switch (opcao)
                     {
                         case 1:
                             loja.adicionar_produto();
@@ -97,7 +98,7 @@ namespace Program
                 {
                     Console.WriteLine(e.Message);
                 }
-            } while (opcao != 0);//enquanto a opção for diferente de 0 se for 0 sai do programa
+            } while (opcao != 0);
         }
     }
 }

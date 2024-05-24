@@ -52,6 +52,25 @@ namespace cliente
             this.morada = morada;
             carrinho = new carrinho_de_compras();
         }
+        public Cliente(string nome, string email, int numero_telefone, string morada, string metodoPagamento)
+        {
+            this.nome = nome;
+            this.email = email;
+            this.numero_telefone = numero_telefone;
+            this.morada = morada;
+            this.metodoPagamento = metodoPagamento;
+            carrinho = new carrinho_de_compras();
+        }
+        public Cliente(string nome, string email, int numero_telefone, string morada, string metodoPagamento, long numeroCartao)
+        {
+            this.nome = nome;
+            this.email = email;
+            this.numero_telefone = numero_telefone;
+            this.morada = morada;
+            this.metodoPagamento = metodoPagamento;
+            this.numeroCartao = numeroCartao;
+            carrinho = new carrinho_de_compras();
+        }
         public void verCarrinho()//mostra o carrinho de compras
         {
             carrinho.verProdutos();
